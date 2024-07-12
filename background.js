@@ -18,7 +18,7 @@ function updateBlockRules(blockedSites) {
         id: 1,
         priority: 1,
         action: { type: "block" },
-        condition: { urlFilter: `|${blockedSites.join('|')}` }
+        condition: { urlFilter: blockedSites.join('|') }
       }
     ] : []
   });
