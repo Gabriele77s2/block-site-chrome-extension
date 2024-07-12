@@ -47,7 +47,6 @@ function updateBlockRules() {
       condition: { urlFilter: `||${site}`, resourceTypes: ["main_frame"] }
     };
     
-    // Additional rule for subdomains
     const subdomainRule = {
       id: index * 2 + 2,
       priority: 1,
@@ -59,26 +58,15 @@ function updateBlockRules() {
   });
 
   chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: rules.map(rule => rule.id),
+    removeRuleIds: Array.from({length: blockedSites.length * 2}, (_, i) => i + 1),
     addRules: rules
   }, () => {
     if (chrome.runtime.lastError) {
       console.error('Error updating rules:', chrome.runtime.lastError);
     }
   });
-
-  // Additional check for already open tabs
-  chrome.tabs.query({}, (tabs) => {
-    tabs.forEach((tab) => {
-      const blockedSite = blockedSites.find(site => tab.url.includes(site));
-      if (blockedSite) {
-        chrome.tabs.update(tab.id, {url: "blocked.html"});
-      }
-    });
-  });
 }
 
-// Listen for tab updates to catch any blocked sites that might slip through
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete' && tab.url) {
     const blockedSite = blockedSites.find(site => tab.url.includes(site));
