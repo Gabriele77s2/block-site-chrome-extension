@@ -1,33 +1,55 @@
-let blockedSite = '';
+let blockedSites = [];
 
-chrome.storage.sync.get(['blockedSite'], function(result) {
-  blockedSite = result.blockedSite || '';
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.sync.get(['blockedSites'], function(result) {
+    blockedSites = result.blockedSites || [];
+    updateBlockRules();
+  });
 });
 
-chrome.webRequest.onBeforeRequest.addListener(
-  function(details) {
-    if (blockedSite && details.url.indexOf(blockedSite) !== -1) {
-      return {cancel: true};
-    }
-    return {cancel: false};
-  },
-  {urls: ["<all_urls>"]},
-  ["blocking"]
-);
-
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    if (request.action === "blockSite") {
-      blockedSite = request.site;
-      chrome.storage.sync.set({blockedSite: blockedSite});
-      sendResponse({status: "blocked", site: blockedSite});
-    } else if (request.action === "unblockSite") {
-      blockedSite = '';
-      chrome.storage.sync.set({blockedSite: ''});
-      sendResponse({status: "unblocked"});
-    } else if (request.action === "getBlockedSite") {
-      sendResponse({site: blockedSite});
-    }
-    return true; // Keeps the message channel open for sendResponse
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case "blockSite":
+      if (!blockedSites.includes(request.site)) {
+        blockedSites.push(request.site);
+        updateBlockRules();
+        updateStorage();
+        sendResponse({status: "blocked", sites: blockedSites});
+      }
+      break;
+    case "unblockSite":
+      blockedSites = blockedSites.filter(site => site !== request.site);
+      updateBlockRules();
+      updateStorage();
+      sendResponse({status: "unblocked", sites: blockedSites});
+      break;
+    case "getBlockedSites":
+      sendResponse({sites: blockedSites});
+      break;
   }
-);
+  return true; // Keeps the message channel open for sendResponse
+});
+
+function updateStorage() {
+  chrome.storage.sync.set({blockedSites: blockedSites}, function() {
+    if (chrome.runtime.lastError) {
+      console.error('Error updating storage:', chrome.runtime.lastError);
+    }
+  });
+}
+
+function updateBlockRules() {
+  chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: blockedSites.map((_, index) => index + 1),
+    addRules: blockedSites.map((site, index) => ({
+      id: index + 1,
+      priority: 1,
+      action: { type: "block" },
+      condition: { urlFilter: `||${site}`, resourceTypes: ["main_frame"] }
+    }))
+  }, () => {
+    if (chrome.runtime.lastError) {
+      console.error('Error updating rules:', chrome.runtime.lastError);
+    }
+  });
+}
