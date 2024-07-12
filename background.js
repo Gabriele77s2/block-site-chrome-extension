@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({sites: blockedSites});
       break;
   }
-  return true; // Keeps the message channel open for sendResponse
+  return true;
 });
 
 function updateStorage() {
@@ -39,17 +39,51 @@ function updateStorage() {
 }
 
 function updateBlockRules() {
-  chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: blockedSites.map((_, index) => index + 1),
-    addRules: blockedSites.map((site, index) => ({
-      id: index + 1,
+  const rules = blockedSites.flatMap((site, index) => {
+    const baseRule = {
+      id: index * 2 + 1,
       priority: 1,
       action: { type: "block" },
       condition: { urlFilter: `||${site}`, resourceTypes: ["main_frame"] }
-    }))
+    };
+    
+    // Additional rule for subdomains
+    const subdomainRule = {
+      id: index * 2 + 2,
+      priority: 1,
+      action: { type: "block" },
+      condition: { urlFilter: `||*.${site}`, resourceTypes: ["main_frame"] }
+    };
+
+    return [baseRule, subdomainRule];
+  });
+
+  chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: rules.map(rule => rule.id),
+    addRules: rules
   }, () => {
     if (chrome.runtime.lastError) {
       console.error('Error updating rules:', chrome.runtime.lastError);
     }
   });
+
+  // Additional check for already open tabs
+  chrome.tabs.query({}, (tabs) => {
+    tabs.forEach((tab) => {
+      const blockedSite = blockedSites.find(site => tab.url.includes(site));
+      if (blockedSite) {
+        chrome.tabs.update(tab.id, {url: "blocked.html"});
+      }
+    });
+  });
 }
+
+// Listen for tab updates to catch any blocked sites that might slip through
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' && tab.url) {
+    const blockedSite = blockedSites.find(site => tab.url.includes(site));
+    if (blockedSite) {
+      chrome.tabs.update(tabId, {url: "blocked.html"});
+    }
+  }
+});
