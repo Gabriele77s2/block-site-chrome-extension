@@ -1,22 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Website Blocker</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { width: 300px; padding: 10px; }
+    input { width: 70%; margin-bottom: 10px; }
+    button { margin-left: 5px; }
+    #blockedSites { margin-top: 10px; }
+    .site-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Website Blocker</h1>
-  </header>
-  <main>
-    <form id="blockForm">
-      <input type="url" id="site" placeholder="Enter website URL" required>
-      <button type="submit">Block</button>
-    </form>
-    <ul id="blockedSites"></ul>
-  </main>
-  <script src="popup.js" type="module"></script>
+  <input type="text" id="site" placeholder="Enter website to block (e.g., example.com)">
+  <button id="blockBtn">Block</button>
+  <div id="blockedSites"></div>
+  <script src="popup.js"></script>
 </body>
 </html>

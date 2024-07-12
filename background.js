@@ -1,37 +1,33 @@
-let blockedSites = new Set();
+let blockedSite = '';
 
-chrome.runtime.onInstalled.addListener(async () => {
-  const { blockedSites: storedSites } = await chrome.storage.sync.get('blockedSites');
-  blockedSites = new Set(storedSites || []);
-  updateBlockRules();
+chrome.storage.sync.get(['blockedSite'], function(result) {
+  blockedSite = result.blockedSite || '';
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  switch (request.action) {
-    case "blockSite":
-      blockedSites.add(request.site);
-      break;
-    case "unblockSite":
-      blockedSites.delete(request.site);
-      break;
-    case "getBlockedSites":
-      sendResponse({ sites: Array.from(blockedSites) });
-      return true;
+chrome.webRequest.onBeforeRequest.addListener(
+  function(details) {
+    if (blockedSite && details.url.indexOf(blockedSite) !== -1) {
+      return {cancel: true};
+    }
+    return {cancel: false};
+  },
+  {urls: ["<all_urls>"]},
+  ["blocking"]
+);
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.action === "blockSite") {
+      blockedSite = request.site;
+      chrome.storage.sync.set({blockedSite: blockedSite});
+      sendResponse({status: "blocked", site: blockedSite});
+    } else if (request.action === "unblockSite") {
+      blockedSite = '';
+      chrome.storage.sync.set({blockedSite: ''});
+      sendResponse({status: "unblocked"});
+    } else if (request.action === "getBlockedSite") {
+      sendResponse({site: blockedSite});
+    }
+    return true; // Keeps the message channel open for sendResponse
   }
-  updateBlockRules();
-  chrome.storage.sync.set({ blockedSites: Array.from(blockedSites) });
-});
-
-async function updateBlockRules() {
-  const rules = Array.from(blockedSites).map((site, index) => ({
-    id: index + 1,
-    priority: 1,
-    action: { type: "block" },
-    condition: { urlFilter: `||${site}`, resourceTypes: ["main_frame"] }
-  }));
-
-  await chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: rules.map(rule => rule.id),
-    addRules: rules
-  });
-}
+);
