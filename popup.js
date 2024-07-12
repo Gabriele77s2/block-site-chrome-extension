@@ -1,36 +1,42 @@
 document.addEventListener('DOMContentLoaded', function() {
-  var siteInput = document.getElementById('site');
-  var blockBtn = document.getElementById('blockBtn');
-  var unblockBtn = document.getElementById('unblockBtn');
-  var statusDiv = document.getElementById('status');
+  const siteInput = document.getElementById('site');
+  const blockBtn = document.getElementById('blockBtn');
+  const blockedSitesDiv = document.getElementById('blockedSites');
 
-  // Get the current blocked site when popup opens
-  chrome.runtime.sendMessage({action: "getBlockedSite"}, function(response) {
-    siteInput.value = response.site || '';
-    updateStatus(response.site);
-  });
+  function updateBlockedSitesList() {
+    chrome.runtime.sendMessage({action: "getBlockedSites"}, function(response) {
+      blockedSitesDiv.innerHTML = '';
+      response.sites.forEach(site => {
+        const siteItem = document.createElement('div');
+        siteItem.className = 'site-item';
+        siteItem.innerHTML = `
+          <span>${site}</span>
+          <button class="unblockBtn" data-site="${site}">Unblock</button>
+        `;
+        blockedSitesDiv.appendChild(siteItem);
+      });
 
-  function updateStatus(site) {
-    statusDiv.textContent = site ? `Currently blocked: ${site}` : "No site blocked";
+      // Add event listeners to unblock buttons
+      document.querySelectorAll('.unblockBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const site = this.getAttribute('data-site');
+          chrome.runtime.sendMessage({action: "unblockSite", site: site}, updateBlockedSitesList);
+        });
+      });
+    });
   }
 
   blockBtn.addEventListener('click', function() {
-    var site = siteInput.value.trim();
+    const site = siteInput.value.trim();
     if (site) {
       chrome.runtime.sendMessage({action: "blockSite", site: site}, function(response) {
         if (response.status === "blocked") {
-          updateStatus(site);
+          siteInput.value = '';
+          updateBlockedSitesList();
         }
       });
     }
   });
 
-  unblockBtn.addEventListener('click', function() {
-    chrome.runtime.sendMessage({action: "unblockSite"}, function(response) {
-      if (response.status === "unblocked") {
-        siteInput.value = '';
-        updateStatus('');
-      }
-    });
-  });
+  updateBlockedSitesList();
 });

@@ -1,12 +1,12 @@
-let blockedSite = '';
+let blockedSites = [];
 
-chrome.storage.sync.get(['blockedSite'], function(result) {
-  blockedSite = result.blockedSite || '';
+chrome.storage.sync.get(['blockedSites'], function(result) {
+  blockedSites = result.blockedSites || [];
 });
 
 chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
-    if (blockedSite && details.url.indexOf(blockedSite) !== -1) {
+    if (blockedSites.some(site => details.url.indexOf(site) !== -1)) {
       return {cancel: true};
     }
     return {cancel: false};
@@ -18,15 +18,17 @@ chrome.webRequest.onBeforeRequest.addListener(
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.action === "blockSite") {
-      blockedSite = request.site;
-      chrome.storage.sync.set({blockedSite: blockedSite});
-      sendResponse({status: "blocked", site: blockedSite});
+      if (!blockedSites.includes(request.site)) {
+        blockedSites.push(request.site);
+        chrome.storage.sync.set({blockedSites: blockedSites});
+        sendResponse({status: "blocked", sites: blockedSites});
+      }
     } else if (request.action === "unblockSite") {
-      blockedSite = '';
-      chrome.storage.sync.set({blockedSite: ''});
-      sendResponse({status: "unblocked"});
-    } else if (request.action === "getBlockedSite") {
-      sendResponse({site: blockedSite});
+      blockedSites = blockedSites.filter(site => site !== request.site);
+      chrome.storage.sync.set({blockedSites: blockedSites});
+      sendResponse({status: "unblocked", sites: blockedSites});
+    } else if (request.action === "getBlockedSites") {
+      sendResponse({sites: blockedSites});
     }
     return true; // Keeps the message channel open for sendResponse
   }

@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Website Blocker</title>
+  <title>Multi-Website Blocker</title>
   <style>
     body { width: 300px; padding: 10px; }
-    input { width: 100%; margin-bottom: 10px; }
-    button { margin-right: 5px; }
+    input { width: 70%; margin-bottom: 10px; }
+    button { margin-left: 5px; }
+    #blockedSites { margin-top: 10px; }
+    .site-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
   </style>
 </head>
 <body>
   <input type="text" id="site" placeholder="Enter website to block (e.g., example.com)">
   <button id="blockBtn">Block</button>
-  <button id="unblockBtn">Unblock</button>
-  <div id="status"></div>
+  <div id="blockedSites"></div>
   <script src="popup.js"></script>
 </body>
 </html>
