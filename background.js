@@ -12,14 +12,14 @@ chrome.storage.onChanged.addListener((changes) => {
 
 function updateBlockRules(blockedSites) {
   chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: [1],
-    addRules: [
+    removeRuleIds: [1],  // We are using rule ID 1 for simplicity
+    addRules: blockedSites.length > 0 ? [
       {
         id: 1,
         priority: 1,
         action: { type: "block" },
-        condition: { urlFilter: blockedSites.join('|') }
+        condition: { urlFilter: `|${blockedSites.join('|')}` }
       }
-    ]
+    ] : []
   });
 }

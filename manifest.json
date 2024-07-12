@@ -5,6 +5,7 @@
   "description": "Blocks access to specified websites.",
   "permissions": [
     "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
     "storage"
   ],
   "background": {
