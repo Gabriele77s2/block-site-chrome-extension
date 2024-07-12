@@ -5,11 +5,14 @@
   <style>
     body { width: 300px; padding: 10px; }
     input { width: 100%; margin-bottom: 10px; }
+    button { margin-right: 5px; }
   </style>
 </head>
 <body>
   <input type="text" id="site" placeholder="Enter website to block (e.g., example.com)">
-  <button id="blockBtn">Block/Unblock</button>
+  <button id="blockBtn">Block</button>
+  <button id="unblockBtn">Unblock</button>
+  <div id="status"></div>
   <script src="popup.js"></script>
 </body>
 </html>

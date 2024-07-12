@@ -17,13 +17,15 @@ chrome.webRequest.onBeforeRequest.addListener(
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    if (request.action === "updateBlockedSite") {
+    if (request.action === "blockSite") {
       blockedSite = request.site;
       chrome.storage.sync.set({blockedSite: blockedSite});
-      // Send a response to confirm the update
-      sendResponse({status: "updated", site: blockedSite});
+      sendResponse({status: "blocked", site: blockedSite});
+    } else if (request.action === "unblockSite") {
+      blockedSite = '';
+      chrome.storage.sync.set({blockedSite: ''});
+      sendResponse({status: "unblocked"});
     } else if (request.action === "getBlockedSite") {
-      // Send the current blocked site
       sendResponse({site: blockedSite});
     }
     return true; // Keeps the message channel open for sendResponse
