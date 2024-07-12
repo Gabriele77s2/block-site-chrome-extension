@@ -1,29 +1,26 @@
 {
-    "manifest_version": 3,
-    "name": "Website Blocker",
-    "version": "1.0",
-    "description": "Blocks access to specified websites.",
-    "permissions": [
-      "webRequest",
-      "webRequestBlocking",
-      "storage",
-      "declarativeNetRequest"
-    ],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "icon.png",
-        "48": "icon.png",
-        "128": "icon.png"
-      }
-    },
-    "icons": {
+  "manifest_version": 3,
+  "name": "Website Blocker",
+  "version": "1.0",
+  "description": "Blocks access to specified websites.",
+  "permissions": [
+    "declarativeNetRequest",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
       "16": "icon.png",
       "48": "icon.png",
       "128": "icon.png"
     }
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
   }
-  
+}
