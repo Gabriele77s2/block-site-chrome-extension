@@ -57,10 +57,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  blockBtn.addEventListener('click', function() {
+  function handleBlockAction() {
     const site = siteInput.value.trim();
     if (site) {
       blockSite(site);
+    }
+  }
+
+  // Event listener for the Block button
+  blockBtn.addEventListener('click', handleBlockAction);
+
+  // Event listener for the Enter key on the input field
+  siteInput.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Prevent form submission
+      handleBlockAction();
     }
   });
 
