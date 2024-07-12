@@ -20,6 +20,12 @@ chrome.runtime.onMessage.addListener(
     if (request.action === "updateBlockedSite") {
       blockedSite = request.site;
       chrome.storage.sync.set({blockedSite: blockedSite});
+      // Send a response to confirm the update
+      sendResponse({status: "updated", site: blockedSite});
+    } else if (request.action === "getBlockedSite") {
+      // Send the current blocked site
+      sendResponse({site: blockedSite});
     }
+    return true; // Keeps the message channel open for sendResponse
   }
 );
