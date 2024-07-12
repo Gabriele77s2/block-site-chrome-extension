@@ -1,25 +1,25 @@
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.set({ blockedSites: [] });
-  updateBlockRules([]);
+let blockedSite = '';
+
+chrome.storage.sync.get(['blockedSite'], function(result) {
+  blockedSite = result.blockedSite || '';
 });
 
-chrome.storage.onChanged.addListener((changes) => {
-  if (changes.blockedSites) {
-    const blockedSites = changes.blockedSites.newValue.map(site => `*://${site}/*`);
-    updateBlockRules(blockedSites);
+chrome.webRequest.onBeforeRequest.addListener(
+  function(details) {
+    if (blockedSite && details.url.indexOf(blockedSite) !== -1) {
+      return {cancel: true};
+    }
+    return {cancel: false};
+  },
+  {urls: ["<all_urls>"]},
+  ["blocking"]
+);
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (request.action === "updateBlockedSite") {
+      blockedSite = request.site;
+      chrome.storage.sync.set({blockedSite: blockedSite});
+    }
   }
-});
-
-function updateBlockRules(blockedSites) {
-  chrome.declarativeNetRequest.updateDynamicRules({
-    removeRuleIds: [1],  // We are using rule ID 1 for simplicity
-    addRules: blockedSites.length > 0 ? [
-      {
-        id: 1,
-        priority: 1,
-        action: { type: "block" },
-        condition: { urlFilter: blockedSites.join('|') }
-      }
-    ] : []
-  });
-}
+);

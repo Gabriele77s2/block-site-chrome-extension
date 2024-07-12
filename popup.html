@@ -1,42 +1,15 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Website Blocker</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        width: 200px;
-        padding: 10px;
-      }
-      input {
-        width: 100%;
-        margin-bottom: 10px;
-      }
-      button {
-        width: 100%;
-      }
-      ul {
-        list-style-type: none;
-        padding: 0;
-      }
-      li {
-        margin-bottom: 5px;
-        display: flex;
-        justify-content: space-between;
-      }
-      .removeBtn {
-        margin-left: 10px;
-        color: red;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <h3>Block a website</h3>
-    <input type="text" id="website" placeholder="example.com" />
-    <button id="blockBtn">Block</button>
-    <h3>Blocked Websites</h3>
-    <ul id="blockedList"></ul>
-    <script src="popup.js"></script>
-  </body>
+<head>
+  <title>Website Blocker</title>
+  <style>
+    body { width: 300px; padding: 10px; }
+    input { width: 100%; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <input type="text" id="site" placeholder="Enter website to block (e.g., example.com)">
+  <button id="blockBtn">Block/Unblock</button>
+  <script src="popup.js"></script>
+</body>
 </html>

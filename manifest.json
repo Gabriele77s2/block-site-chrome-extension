@@ -1,27 +1,19 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Website Blocker",
   "version": "1.0",
-  "description": "Blocks access to specified websites.",
+  "description": "Block and unblock a specific website",
   "permissions": [
-    "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
+    "webRequest",
+    "webRequestBlocking",
+    "<all_urls>",
     "storage"
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"],
+    "persistent": true
   },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icon.png",
-      "48": "icon.png",
-      "128": "icon.png"
-    }
-  },
-  "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
+  "browser_action": {
+    "default_popup": "popup.html"
   }
 }
